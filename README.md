@@ -61,7 +61,7 @@ Makefile distribué codé en [Golang](www.golang.org) en utilisant la librairie 
 
 ##Important
 
-Si le client et le serveur sont lancer sur deux machines physique distincte. Il est important que le port sur lequel écoute le serveur soit ouvert.
+Si le client et le serveur sont lancés sur deux machines physiques distinctes. Il est important que le port sur lequel écoute le serveur soit ouvert.
 
 ###Exemple
 
