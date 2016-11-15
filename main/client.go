@@ -1,9 +1,10 @@
 package main
 
 import (
-	"compilationInterface"
+	"SDCA-Makefile/compilationInterface"
 	"crypto/tls"
 	"fmt"
+
 	"git.apache.org/thrift.git/lib/go/thrift"
 )
 

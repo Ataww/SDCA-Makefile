@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	//"io"
-	"compilationInterface"
+	"SDCA-Makefile/compilationInterface"
 	"os/exec"
 )
 
