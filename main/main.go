@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
-	"git.apache.org/thrift.git/lib/go/thrift"
 	"os"
+
+	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
 func Usage() {
@@ -21,6 +23,7 @@ func main() {
 	buffered := flag.Bool("buffered", false, "Use buffered transport")
 	addr := flag.String("addr", "localhost:9090", "Address to listen to")
 	secure := flag.Bool("secure", false, "Use tls secure transport")
+	hostfile := flag.String("hostfile", "hostfile.txt", "Specify hostfile")
 
 	flag.Parse()
 
@@ -56,7 +59,23 @@ func main() {
 			fmt.Println("error running server:", err)
 		}
 	} else {
-		if err := runClient(transportFactory, protocolFactory, *addr, *secure); err != nil {
+		var hosts []string
+
+		fmt.Println("Checking hosts inside " + *hostfile + " file")
+		f, _ := os.Open(*hostfile)
+		scanner := bufio.NewScanner(f)
+
+		for scanner.Scan() {
+			str := scanner.Text()
+			hosts = append(hosts, str)
+			fmt.Println("Found host : " + str)
+		}
+
+		if len(hosts) == 0 {
+			fmt.Println("No hosts were found")
+		}
+
+		if err := runClient(transportFactory, protocolFactory, *secure, hosts); err != nil {
 			fmt.Println("error running client:", err)
 		}
 	}

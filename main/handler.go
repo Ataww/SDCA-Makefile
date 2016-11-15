@@ -33,11 +33,11 @@ func (p *CompilationHandler) ExecuteCommand(command *compilationInterface.Comman
 	// Run command
 	error := cmd.Start()
 	if error != nil {
-		fmt.Print("ExecuteCommand() an error occureds.\n")
+		fmt.Print("ExecuteCommand() an error occured.\n")
 		return 1, error
 	}
 
 	// Command success
-	fmt.Print("Command xexcecute without errors \n")
+	fmt.Print("Command executed without errors \n")
 	return 0, error
 }
