@@ -1,9 +1,10 @@
 package main
 
 import (
-  "fmt"
+  "log"
   "bufio"
   "os"
+  "regexp"
 )
 
 type Target struct {
