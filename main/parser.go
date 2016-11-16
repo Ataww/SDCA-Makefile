@@ -7,12 +7,23 @@ import (
   "os"
   "fmt"
   "regexp"
+  "strings"
 )
 
-func parse(path string) ([]string) {
-  lines, _ := readFile(path)
-  rawTargets := parseRawTargets(lines)
-  return lines
+type RawTarget struct {
+  deps, cmds string
+}
+
+type TargetMap map[string]*RawTarget
+
+func Parse(path string) (*Target, error) {
+  lines, err := readFile(path)
+  if err != nil {
+    return nil, err
+  }
+  raws, root := parseRawTargets(lines)
+  targetTree := builDependencyTree(raws,root)
+  return targetTree, err
 }
 
 func readFile(path string)([]string, error) {
@@ -35,35 +46,66 @@ func readFile(path string)([]string, error) {
     return lines, err
 }
 
-func parseRawTargets(lines []string)(*map[string][]string) {
-  rawTargets := make(map[string][]string)
+func parseRawTargets(lines []string)(*TargetMap,string) {
   var (
-    tar = regexp.MustCompile("(?P<target>[[:print:]]+): (?P<deps>[[:print:]]*)")
-    command = regexp.MustCompile("(?P<cmds>)")
+    tar = regexp.MustCompile("([\\w\\.]+)\\s?:(?:\\s[\\w\\.]+)*")
+    command = regexp.MustCompile("[[:print]]*")
+    rawTargets = make(TargetMap)
+    root = ""
     )
-    for i:= range lines {
-      if(tar.MatchString(lines[i])) {
-        if(command.MatchString(lines[i+1])) {
-
+    for i := range lines {
+      if tar.MatchString(lines[i]) {
+        targets:= strings.Split(lines[i],":")
+        cur := strings.TrimSpace(targets[0])
+        rawTargets[cur] = &RawTarget{}
+        if root == "" {
+          root = cur
+        }
+        if targets[1] != "" {
+          rawTargets[cur].deps = strings.TrimSpace(targets[1])
+        }
+        if command.MatchString(lines[i+1]) {
+          rawTargets[cur].cmds = strings.TrimSpace(lines[i+1])
         }
       }
     }
-  return &rawTargets
+  return &rawTargets, root
+}
+
+func builDependencyTree(raws *TargetMap, root string)(*Target) {
+  // cmds
+  red, ok := (*raws)[root]
+  if !ok {
+    target := NewTarget(root,"","")
+    return target
+  }
+  cmd, args := parseCmd(red.cmds)
+  target := NewTarget(root, cmd,args)
+  // Deps
+  deps := strings.Split(red.deps, " ")
+  for i := range deps {
+    if deps[i] != "" {
+      dep := builDependencyTree(raws,deps[i])
+      target.dependencies = append(target.dependencies,dep)
+    }
+  }
+  // tree
+  return target
+}
+
+// split the command string between command and arguments
+func parseCmd(cmd string)(string,string) {
+  blocks := strings.Split(cmd," ")
+  command := blocks[0]
+  blocks = append(blocks[:0], blocks[1:]...)
+  args := strings.Join(blocks," ")
+  return command, args
 }
 
 func main() {
-  file := flag.String("path", "Makefile", "Specify the Makefile path.")
+  file := flag.String("makefile", "Makefile", "Specify the Makefile path.")
   flag.Parse()
   fmt.Println("Opening Makefile",*file)
-  lines := parse(*file)
-  for i := range lines {
-    fmt.Println(i, lines[i])
-  }
-
-  re := regexp.MustCompile("(?P<first>[a-zA-Z]+) (?P<last>[a-zA-Z]+)")
-	fmt.Println(re.MatchString("Alan Turing"))
-	fmt.Printf("%q\n", re.SubexpNames())
-	reversed := fmt.Sprintf("${%s} ${%s}", re.SubexpNames()[2], re.SubexpNames()[1])
-	fmt.Println(reversed)
-	fmt.Println(re.ReplaceAllString("Alan Turing", reversed))
+  target, _ := Parse(*file)
+  fmt.Println("parsed",*target)
 }
