@@ -15,7 +15,7 @@ func NewCompilationHandler() *CompilationHandler {
 }
 
 func (p *CompilationHandler) ExecuteCommand(command *compilationInterface.Command) (status compilationInterface.Int, err error) {
-	fmt.Print("Execute command ->", command.Program, " ", command.Arguments, "\n")
+	fmt.Print("Executing target ", command.ID, " : ", command.Program, " ", command.Arguments, "\n")
 
 	// Create command
 	cmd := exec.Command(command.Program, command.Arguments)
@@ -33,7 +33,13 @@ func (p *CompilationHandler) ExecuteCommand(command *compilationInterface.Comman
 	// Run command
 	error := cmd.Start()
 	if error != nil {
-		fmt.Print("ExecuteCommand() an error occured.\n")
+		fmt.Print("ExecuteCommand() an error occured during Start().\n")
+		return 1, error
+	}
+
+	error = cmd.Wait()
+	if error != nil {
+		fmt.Print("ExecuteCommand() an error occured during Wait().\n")
 		return 1, error
 	}
 

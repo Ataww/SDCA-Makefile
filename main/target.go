@@ -8,7 +8,9 @@ type Target struct {
 	id           string
 	program      string
 	args         string
+	serverId     int
 	done         bool
+	computing    bool
 	dependencies []*Target
 }
 
@@ -18,6 +20,7 @@ func NewTarget(id string, program string, args string) *Target {
 	target.program = program
 	target.args = args
 	target.done = false
+	target.computing = false
 	return target
 }
 
@@ -30,39 +33,45 @@ func (t Target) Print(level int) {
 	for i := 0; i < level; i++ {
 		fmt.Print("\t")
 	}
-	fmt.Print(t.id + " Dependencies : ")
+	fmt.Print(t.id + " Dependencies : \n")
 	for i := 0; i < len(t.dependencies); i++ {
 		t.dependencies[i].Print(level + 1)
 	}
 }
 
 func (t *Target) Is_Computable() bool {
-	for i := 0; i < len(t.dependencies); i++ {
-		if t.dependencies[i].done != true {
-			return false
-		}
+	if t.computing == true {
+		return false
 	}
-	return true
+
+	if t.done == true {
+		return false
+	} else {
+		for i := 0; i < len(t.dependencies); i++ {
+			if t.dependencies[i].done != true {
+				return false
+			}
+		}
+		return true
+	}
 }
 
 func (t *Target) Get_Leaf() *Target {
-	if t.Is_Computable() == true {
-		//Compute
-		t.done = true
+	if t.Is_Computable() {
+		t.computing = true
 		return t
 	} else {
-		//I'm not computable --> I have some "not-done" dependencies
 		for i := 0; i < len(t.dependencies); i++ {
-			//if t.dependencies[i].Is_Computable() == false {
-
-			return t.dependencies[i].Get_Leaf()
-			//}
+			if t.dependencies[i].done == false && t.dependencies[i].computing == false {
+				return t.dependencies[i].Get_Leaf()
+			}
 		}
+
+		return nil
 	}
-	return nil
 }
 
-func main() {
+func maindqs() {
 	t1 := NewTarget("target1", "ls", "-l")
 	t2 := NewTarget("target2", "ls", "-l")
 	t3 := NewTarget("target3", "ls", "-l")
@@ -89,11 +98,12 @@ func main() {
 	fmt.Printf("t6 : %t\n", t6.Is_Computable())
 	fmt.Printf("t7 : %t\n", t7.Is_Computable())
 
-	for {
+	for t1.done != true {
 		var leaf = t1.Get_Leaf()
-		if leaf == nil {
-			fmt.Println("NULL")
+		if leaf != nil {
+			leaf.Print(0)
+			leaf.computing = false
+			leaf.done = true
 		}
-		leaf.Print(0)
 	}
 }
