@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
-
+	"path/filepath"
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"sync"
 	"os"
@@ -14,6 +14,7 @@ import (
 var busy []bool
 var mutex sync.Mutex
 var current_server_id int = 0
+var workingDir string
 
 /*
 Create thrift transport
@@ -72,6 +73,7 @@ func handleTarget(transport *thrift.TTransport, protocolFactory thrift.TProtocol
 	client := compilationInterface.NewCompilationServiceClientFactory(*transport, protocolFactory)
 	command := compilationInterface.NewCommand()
 	command.CommandLine = target.lineCommand
+	command.WorkingDir = workingDir
 	command.ID = target.id
 
 	// Send the command
@@ -131,6 +133,10 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 
 	// Parse Makefile
 	root_target, _ := Parse(makefile)
+
+	// Calculte working directory
+	dir, _ := filepath.Abs(filepath.Dir(makefile))
+	workingDir = dir
 
 	// Job distribution while the target is not done
 	for root_target.done != true {

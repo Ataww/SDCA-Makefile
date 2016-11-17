@@ -22,6 +22,7 @@ func (p *CompilationHandler) ExecuteCommand(command *compilationInterface.Comman
 
 	// Create command
 	cmd := exec.Command("bash", "-c",command.CommandLine)
+	cmd.Dir = command.WorkingDir
 	out, err := cmd.Output()
 
 	if (err != nil){
