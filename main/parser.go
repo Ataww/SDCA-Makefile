@@ -1,7 +1,6 @@
 package main
 
 import (
-  "log"
   "bufio"
   "os"
   "regexp"
@@ -12,7 +11,9 @@ type RawTarget struct {
   deps, cmds string
 }
 
-type TargetMap map[string]*RawTarget
+type RawTargetMap map[string]*RawTarget
+
+type TargetMap map[string]*Target
 
 func Parse(path string) (*Target, error) {
   lines, err := readFile(path)
@@ -20,14 +21,14 @@ func Parse(path string) (*Target, error) {
     return nil, err
   }
   raws, root := parseRawTargets(lines)
-  targetTree := builDependencyTree(raws,root)
+  targetBuilt := make(TargetMap)
+  targetTree := builDependencyTree(raws,root, targetBuilt)
   return targetTree, err
 }
 
 func readFile(path string)([]string, error) {
   file, err := os.Open(path)
   if err != nil {
-        log.Fatal(err)
         return nil, err
     }
     defer file.Close()
@@ -37,18 +38,14 @@ func readFile(path string)([]string, error) {
     for  scanner.Scan() {
         lines = append(lines,scanner.Text())
     }
-
-    if err := scanner.Err(); err != nil {
-        log.Fatal(err)
-    }
     return lines, err
 }
 
-func parseRawTargets(lines []string)(*TargetMap,string) {
+func parseRawTargets(lines []string)(*RawTargetMap,string) {
   var (
     tar = regexp.MustCompile("([\\w\\.]+)\\s?:(?:\\s[\\w\\.]+)*")
     command = regexp.MustCompile("[[:print]]*")
-    rawTargets = make(TargetMap)
+    rawTargets = make(RawTargetMap)
     root = ""
     )
     for i := range lines {
@@ -70,20 +67,25 @@ func parseRawTargets(lines []string)(*TargetMap,string) {
   return &rawTargets, root
 }
 
-func builDependencyTree(raws *TargetMap, root string)(*Target) {
+func builDependencyTree(raws *RawTargetMap, root string, targetBuilt TargetMap)(*Target) {
   // cmds
-  red, ok := (*raws)[root]
+  raw, ok := (*raws)[root]
   if !ok {
     target := NewTarget(root,"")
+    targetBuilt[root] = target
     return target
   }
-  target := NewTarget(root, red.cmds)
+  target := NewTarget(root, raw.cmds)
   // Deps
-  deps := strings.Split(red.deps, " ")
+  deps := strings.Split(raw.deps, " ")
   for i := range deps {
     if deps[i] != "" {
-      dep := builDependencyTree(raws,deps[i])
-      target.dependencies = append(target.dependencies,dep)
+      dep, ok := targetBuilt[deps[i]]
+      if !ok {
+        dep = builDependencyTree(raws,deps[i],targetBuilt)
+        targetBuilt[deps[i]] = dep
+      }
+      target.dependencies = append(target.dependencies,dep, targetBuilt[deps[i]])
     }
   }
   // tree
