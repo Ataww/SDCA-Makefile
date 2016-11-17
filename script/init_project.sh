@@ -2,9 +2,9 @@
 
 user=$USER
 
-echo -e "\e[33m#####################################"
-echo          "# SCRIPT DE CONFIGURATION DES HOTES #"
-echo -e       "##################################### \e[39m"
+echo -e "\e[33m############################"
+echo          "# INITIALISATION DU PROJET #"
+echo -e       "############################ \e[39m"
 
 ### USER DOES THIS PART
 #Create application arborescence
