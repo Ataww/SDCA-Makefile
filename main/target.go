@@ -6,19 +6,17 @@ import (
 
 type Target struct {
 	id           string
-	program      string
-	args         string
+	lineCommand      string
 	serverId     int
 	done         bool
 	computing    bool
 	dependencies []*Target
 }
 
-func NewTarget(id string, program string, args string) *Target {
+func NewTarget(id string, _lineCommand string) *Target {
 	target := new(Target)
 	target.id = id
-	target.program = program
-	target.args = args
+	target.lineCommand = _lineCommand
 	target.done = false
 	target.computing = false
 	return target
@@ -33,7 +31,7 @@ func (t Target) Print(level int) {
 	for i := 0; i < level; i++ {
 		fmt.Print("\t")
 	}
-	fmt.Print(t.id + " Args : ",t.args,"\n")
+	//fmt.Print(t.id + " Args : ",t.args,"\n")
 	fmt.Print(" Dependencies : \n")
 	for i := 0; i < len(t.dependencies); i++ {
 		t.dependencies[i].Print(level + 1)

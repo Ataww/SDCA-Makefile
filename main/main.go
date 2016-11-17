@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-
 	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
@@ -15,6 +14,9 @@ func Usage() {
 	fmt.Fprint(os.Stderr, "\n")
 }
 
+/*
+Main function
+ */
 func main() {
 	flag.Usage = Usage
 	server := flag.Bool("server", false, "Run server")
@@ -56,6 +58,7 @@ func main() {
 	}
 
 	if *server {
+		// Launch server
 		if err := runServer(transportFactory, protocolFactory, *addr, *secure); err != nil {
 			fmt.Println("error running server:", err)
 		}
@@ -66,6 +69,7 @@ func main() {
 		f, _ := os.Open(*hostfile)
 		scanner := bufio.NewScanner(f)
 
+		// Read hostfile
 		for scanner.Scan() {
 			str := scanner.Text()
 			hosts = append(hosts, str)
@@ -73,9 +77,12 @@ func main() {
 		}
 
 		if len(hosts) == 0 {
+			// No host = exit
 			fmt.Println("No hosts were found")
+			os.Exit(1)
 		}
 
+		// Launch client
 		if err := runClient(transportFactory, protocolFactory, *secure, hosts, *makefile); err != nil {
 			fmt.Println("error running client:", err)
 		}

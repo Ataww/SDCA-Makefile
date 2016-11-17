@@ -11,7 +11,6 @@ import (
 func runServer(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, addr string, secure bool) error {
 	var transport thrift.TServerTransport
 	var err error
-	//transport, err = thrift.NewTServerSocket(addr)
 
 	if secure {
 		cfg := new(tls.Config)

@@ -2,8 +2,7 @@ namespace go compilationInterface
 
 struct Command
 {
-	1:string program,
-	2:string arguments,
+	1:string commandLine,
 	3:string id
 }
 

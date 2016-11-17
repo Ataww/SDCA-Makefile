@@ -1,11 +1,9 @@
 package main
 
 import (
-  "flag"
   "log"
   "bufio"
   "os"
-  "fmt"
   "regexp"
   "strings"
 )
@@ -76,11 +74,10 @@ func builDependencyTree(raws *TargetMap, root string)(*Target) {
   // cmds
   red, ok := (*raws)[root]
   if !ok {
-    target := NewTarget(root,"","")
+    target := NewTarget(root,"")
     return target
   }
-  cmd, args := parseCmd(red.cmds)
-  target := NewTarget(root, cmd,args)
+  target := NewTarget(root, red.cmds)
   // Deps
   deps := strings.Split(red.deps, " ")
   for i := range deps {
@@ -91,21 +88,4 @@ func builDependencyTree(raws *TargetMap, root string)(*Target) {
   }
   // tree
   return target
-}
-
-// split the command string between command and arguments
-func parseCmd(cmd string)(string,string) {
-  blocks := strings.Split(cmd," ")
-  command := blocks[0]
-  blocks = append(blocks[:0], blocks[1:]...)
-  args := strings.Join(blocks," ")
-  return command, args
-}
-
-func mainaze() {
-  file := flag.String("makefile", "Makefile", "Specify the Makefile path.")
-  flag.Parse()
-  fmt.Println("Opening Makefile",*file)
-  target, _ := Parse(*file)
-  fmt.Println("parsed",*target)
 }

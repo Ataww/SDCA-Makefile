@@ -14,13 +14,14 @@ func NewCompilationHandler() *CompilationHandler {
 	return &CompilationHandler{}
 }
 
+/*
+Execute a command
+ */
 func (p *CompilationHandler) ExecuteCommand(command *compilationInterface.Command) (status compilationInterface.Int, err error) {
-	fmt.Print("Executing target ", command.ID, " : ", command.Program, " ", command.Arguments, "\n")
-
-	bash_command := command.Program+" "+ command.Arguments
+	fmt.Println("Going to execute ", command.ID, " : ",command.CommandLine)
 
 	// Create command
-	cmd := exec.Command("bash", "-c",bash_command)
+	cmd := exec.Command("bash", "-c",command.CommandLine)
 	out, err := cmd.Output()
 
 	if (err != nil){
