@@ -102,7 +102,7 @@ func parseCmd(cmd string)(string,string) {
   return command, args
 }
 
-func main() {
+func mainaze() {
   file := flag.String("makefile", "Makefile", "Specify the Makefile path.")
   flag.Parse()
   fmt.Println("Opening Makefile",*file)

@@ -24,6 +24,7 @@ func main() {
 	addr := flag.String("addr", "localhost:9090", "Address to listen to")
 	secure := flag.Bool("secure", false, "Use tls secure transport")
 	hostfile := flag.String("hostfile", "hostfile.txt", "Specify hostfile")
+	makefile := flag.String("makefile", "Makefile", "Specify the Makefile path.")
 
 	flag.Parse()
 
@@ -75,7 +76,7 @@ func main() {
 			fmt.Println("No hosts were found")
 		}
 
-		if err := runClient(transportFactory, protocolFactory, *secure, hosts); err != nil {
+		if err := runClient(transportFactory, protocolFactory, *secure, hosts, *makefile); err != nil {
 			fmt.Println("error running client:", err)
 		}
 	}
