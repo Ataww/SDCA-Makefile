@@ -61,10 +61,12 @@ func (t *Target) Get_Leaf() *Target {
 	} else {
 		for i := 0; i < len(t.dependencies); i++ {
 			if t.dependencies[i].done == false && t.dependencies[i].computing == false {
-				return t.dependencies[i].Get_Leaf()
+				if leaf := t.dependencies[i].Get_Leaf(); leaf!= nil{
+					return leaf
+				}
+
 			}
 		}
-
 		return nil
 	}
 }
