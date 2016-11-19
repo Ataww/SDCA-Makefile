@@ -289,11 +289,9 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 		handleStop(servers[i], protocolFactory, hosts[i])
 	}
 
-	fin := time.Now()
+	elapsed := time.Since(debut)
 
-	duree := fin - debut
-
-	fmt.Println("==> TOTAL execution : ", duree.Second(), " sec.")
+	fmt.Println("==> TOTAL execution : ", elapsed)
 
 	// End
 	return nil
