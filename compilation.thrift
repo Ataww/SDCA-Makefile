@@ -11,4 +11,5 @@ typedef i32 int
 service CompilationService
 {
 		int executeCommand(1:Command command),
+		void stop(),
 }

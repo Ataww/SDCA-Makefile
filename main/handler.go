@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	//"io"
 	"SDCA-Makefile/compilationInterface"
 	"os/exec"
+	"os"
 )
 
 type CompilationHandler struct {
@@ -33,4 +33,10 @@ func (p *CompilationHandler) ExecuteCommand(command *compilationInterface.Comman
 		fmt.Print("Command executed without errors :",string(out[:])," \n")
 		return 0, nil
 	}
+}
+
+func (p *CompilationHandler) Stop()(err error){
+	fmt.Println("Server is going to shudown")
+	defer os.Exit(0)
+	return nil
 }

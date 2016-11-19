@@ -9,6 +9,12 @@ import (
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"sync"
 	"os"
+	"time"
+	"golang.org/x/crypto/ssh"
+	"bytes"
+	"strings"
+	"io/ioutil"
+	"os/user"
 )
 
 var busy []bool
@@ -94,7 +100,28 @@ func handleTarget(transport *thrift.TTransport, protocolFactory thrift.TProtocol
 }
 
 /*
-Find an available host
+Stop server
+ */
+func handleStop(transport *thrift.TTransport, protocolFactory thrift.TProtocolFactory, serverName string) (err error) {
+
+	// Configuration
+	open_connection(transport)
+	client := compilationInterface.NewCompilationServiceClientFactory(*transport, protocolFactory)
+
+	// Send the command
+	err = client.Stop()
+	close_connection(transport)
+
+	if err != nil {
+		fmt.Println(serverName, " : There was a problem while stoping server ", err.Error())
+	}
+	fmt.Println(serverName , " stop")
+
+	return err
+}
+
+/*
+Find an available server
  */
 func find_available_server() int {
 	mutex.Lock()
@@ -114,10 +141,100 @@ func find_available_server() int {
 }
 
 /*
+Launch one server via SSH
+ */
+func launchServer(command string, hostname string, port string, config *ssh.ClientConfig) string {
+	connection, error := ssh.Dial("tcp", fmt.Sprintf("%s:%s", strings.Split(hostname, ":")[0], port), config)
+	if error != nil{
+		fmt.Println("ERROR NEW CONNECTION ",fmt.Sprintf("%s:%s", strings.Split(hostname, ":")[0], port)," : ", error.Error())
+	}
+	defer connection.Close()
+	session, error:= connection.NewSession()
+	if error != nil{
+		fmt.Println("ERROR NEW SESSION : ", error)
+	}
+	defer session.Close()
+
+	var stdoutBuf bytes.Buffer
+	session.Stdout = &stdoutBuf
+	session.Run(command)
+
+	return hostname + " : " + stdoutBuf.String()
+}
+
+/*
+Get id_rsa key
+ */
+func getKeyFile() (key ssh.Signer, err error){
+	usr, _ := user.Current()
+	file := usr.HomeDir + "/.ssh/id_rsa"
+	buf, err := ioutil.ReadFile(file)
+	if err != nil {
+		return
+	}
+	key, err = ssh.ParsePrivateKey(buf)
+	if err != nil {
+		return
+	}
+	return
+}
+
+/*
+Starts servers
+ */
+func startServers(hosts []string){
+	usr, _ := user.Current()
+
+	// "&>" is normal -> don't correct with "& >"
+	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/main -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
+
+	results := make(chan string, 10)
+	timeout := time.After(10 * time.Second)
+
+	port := "22"
+
+	key, err := getKeyFile();
+	if err !=nil {
+		panic(err)
+	}
+	// Create ssh config
+	config := &ssh.ClientConfig{
+		User: usr.Name,
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(key),
+		},
+	}
+
+	// Launch on each server
+	for i := 0; i < len(hosts); i++{
+		go func(hostname string, port string){
+			results <- launchServer(cmd, hostname, port, config)
+		}(hosts[i], port)
+	}
+
+	// Wait return
+	for i := 0; i < len(hosts); i++ {
+		select {
+		case res := <- results:
+			fmt.Println("Launch server on ",res)
+		case <- timeout:
+			fmt.Println("Time out ! : Exit ")
+			os.Exit(1)
+		}
+	}
+
+
+	time.Sleep(2 * time.Second)
+}
+
+/*
 Main client function
  */
 func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, secure bool, hosts []string, makefile string) error {
 	var servers []*thrift.TTransport
+
+	// Start all servers
+	startServers(hosts);
 
 	// Create thrift connection
 	for i := 0; i < len(hosts); i++ {
@@ -137,6 +254,7 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 	// Calculte working directory
 	dir, _ := filepath.Abs(filepath.Dir(makefile))
 	workingDir = dir
+
 
 	// Job distribution while the target is not done
 	for root_target.done != true {
@@ -163,6 +281,11 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 
 			}
 		}
+	}
+
+	// Stop each server
+	for i := 0; i < len(servers); i++ {
+		handleStop(servers[i], protocolFactory, hosts[i])
 	}
 
 	// End
