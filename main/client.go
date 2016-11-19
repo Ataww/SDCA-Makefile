@@ -232,6 +232,7 @@ Main client function
  */
 func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, secure bool, hosts []string, makefile string) error {
 	var servers []*thrift.TTransport
+	debut := time.Now()
 
 	// Start all servers
 	startServers(hosts);
@@ -287,6 +288,12 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 	for i := 0; i < len(servers); i++ {
 		handleStop(servers[i], protocolFactory, hosts[i])
 	}
+
+	fin := time.Now()
+
+	duree := fin - debut
+
+	fmt.Println("==> TOTAL execution : ", duree.Second(), " sec.")
 
 	// End
 	return nil
