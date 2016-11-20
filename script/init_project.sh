@@ -19,8 +19,6 @@ git clone https://github.com/Ataww/SDCA-Makefile.git /home/$user/Go/src/SDCA-Mak
 #Get dependencies
 echo "Installing Apache Thrift Go library..."
 go get git.apache.org/thrift.git/lib/go/thrift/...
-echo "Installing crypto/ssh library..."
-go get golang.org/x/crypto/ssh
 
 #Generate Go code from thrift file
 cd /home/$user/Go/src/SDCA-Makefile/
