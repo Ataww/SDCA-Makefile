@@ -4,7 +4,7 @@
 
 ##Présentation
 
-Makefile distribué codé en [Golang](www.golang.org) en utilisant la librairie [Thrift](www.http://thrift.apache.org/).
+Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie [Thrift](www.http://thrift.apache.org/).
 
 ----
 
@@ -15,53 +15,53 @@ Makefile distribué codé en [Golang](www.golang.org) en utilisant la librairie 
 
 ----
 
-##Compilation
+##Procédure de déploiement sur Grid5000
 
-1. Aller dans le workspace Go
+1. Réserver un cluster de machines :
 
-		cd $GOPATH/src
+		# <nb_machine> = Nombre de machines à réserver
+		# <time> = durée de la réservation
+		oarsub -I -l nodes=<nb_machine>,walltime=<time> -t deploy
 
-2. Cloner le projet
+2. Déployer Debian Jessie sur le cluster :
+
+		uniq $OAR_NODE_FILE > hostfile.txt
+		kadeploy3 -f ./hostfile.txt -e jessie-x64-base -k
+
+3. Cloner le projet :
 
 		git clone https://github.com/Ataww/SDCA-Makefile.git
 
-3. Générer les fichiers Go de service
+4. Lancer le script de configuration des machines :
+	
+		bash ./SDCA-Makefile/script/configure_host.sh
 
-		cd SDCA-Makefile && thrift -gen go -out . compilation.thrift
+5. Lancer le script d'installation des packages avec taktuk :
 
-4. Récupérer la librairie Go de Thrift
+		# <user_name> = votre nom d'utilisateur
+		taktuk -l root -f hostfile.txt broadcast exec [ /home/<user_name>/SDCA-Makefile/script/taktuk_root.sh $USER $(id -u) ]
 
-		go get git.apache.org/thrift.git/lib/go/thrift/...
+6. Se connecter à l'une des machine, qui sera la machine cliente, et lancer le script d'initialisation du projet :
 
-5. Compiler le main
+		# Connection à la machine
+		ssh <machine>
+			
+		# Lancer le script
+		bash ./SDCA-Mafefile/script/init_project.sh
 
-		#L'exécutable est généré dans $GOBIN
-		go install SDCA-Makefile/main
-
-6. Lancer le serveur et le client
-
-		#Pour svoir les options de lancement
-		./main -help
-
-		#Exemple d'exécution en mode serveur
-		./main -server=True -addr=localhost:9090
-
-		#Exemple d'éxécution en mode client
-		./main -server=False -addr=localhost:9090
+7. 
 
 ----
 
-##Important
+##Bugs connus
 
-Si le client et le serveur sont lancés sur deux machines physiques distinctes. Il est important que le port sur lequel écoute le serveur soit ouvert.
+- Il se peut que taktuk ne remplisse pas entièrement sa tâche d'installation des packages sur toutes les machines. Dans ce cas, un message d'error avec le status 127 sera affiché. Pour régler le problème il faut relancer le script "init_taktuk.sh" sur la machine concernée.
 
-###Exemple
+----
 
-Si mon serveur est lancé sur le port 9090 en tcp
+##Contacts
 
-	#Ouverture du port
-	sudo iptables -A INPUT -p tcp --dport 9090 ACCEPT
-	sudo iptables-save
-
-	#Vous pouvez vérifier qur le port est bien ouvert
-	netstat -pln
+- [Clément Taboulot](mailto:clement.taboulot@grenoble-inp.org)
+- [Vincent Chenal](mailto:vincent.chenal@grenoble-inp.org)
+- [Maxime Hagenbourger](mailto:maxime.hagenbourger@grenoble-inp.org)
+- [Nathanaël Couret](mailto:nathanael.couret@grenoble-inp.org)
