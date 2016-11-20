@@ -1,4 +1,4 @@
-package dmake
+package main
 
 import (
   "bufio"

@@ -1,4 +1,4 @@
-package dmake
+package main
 
 import (
 	"bufio"
@@ -66,20 +66,27 @@ func main() {
 		var hosts []string
 
 		fmt.Println("Checking hosts inside " + *hostfile + " file")
-		f, _ := os.Open(*hostfile)
-		scanner := bufio.NewScanner(f)
 
-		// Read hostfile
-		for scanner.Scan() {
-			str := scanner.Text()
-			hosts = append(hosts, str)
-			fmt.Println("Found host : " + str)
-		}
 
-		if len(hosts) == 0 {
-			// No host = exit
-			fmt.Println("No hosts were found")
-			os.Exit(1)
+		if _, err := os.Stat(*hostfile); os.IsNotExist(err) {
+		  	hosts = append(hosts, "localhost:9090")
+			fmt.Println("Using localhost as server : localhost:9090 ")
+		}else{
+			f, _ := os.Open(*hostfile)
+			scanner := bufio.NewScanner(f)
+
+			// Read hostfile
+			for scanner.Scan() {
+				str := scanner.Text()
+				hosts = append(hosts, str)
+				fmt.Println("Found host : " + str)
+			}
+
+			if len(hosts) == 0 {
+				// No host = exit
+				fmt.Println("No hosts were found")
+				os.Exit(1)
+			}
 		}
 
 		// Launch client

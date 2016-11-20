@@ -1,4 +1,4 @@
-package dmake
+package main
 
 import (
 	"SDCA-Makefile/compilationInterface"
@@ -11,7 +11,6 @@ import (
 	"os"
 	"time"
 	"strings"
-	"os/user"
 	"os/exec"
 )
 
@@ -142,21 +141,33 @@ func find_available_server() int {
 Starts servers
  */
 func startServers(hosts []string){
-	usr, _ := user.Current()
+	//usr, _ := user.Current()
 
 	// "&>" is normal -> don't correct with "& >"
-	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
-	fmt.Println("Going to execute this command on each server : ", cmd)
+	cmd := "bash -c 'dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
+	cmd_localhost := "dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
+
+
+	local_hostname, _ := os.Hostname()
 
 	for _,hostname := range hosts{
-		command := exec.Command("ssh", strings.Split(hostname, ":")[0], cmd )
+		var command *exec.Cmd
+		fmt.Println("hostname : ",hostname)
+		if (strings.Contains(hostname, "localhost") || strings.Contains(hostname, local_hostname)){
+			fmt.Println("Going to execute this command : ", cmd_localhost)
+			command = exec.Command("bash", "-c", cmd_localhost )
+		}else{
+			fmt.Println("Going to execute this command : ", cmd)
+			command = exec.Command("ssh", strings.Split(hostname, ":")[0], cmd )
+		}
+
 		_ , err := command.Output()
 
 		if (err != nil){
 			fmt.Println("Error while launching server : Exit")
 			os.Exit(1)
 		}else{
-			fmt.Print(strings.Split(hostname, ":")[0], " started")
+			fmt.Println(strings.Split(hostname, ":")[0], " started")
 		}
 	}
 
