@@ -12,6 +12,7 @@ import (
 	"time"
 	"strings"
 	"os/exec"
+	"os/user"
 )
 
 var busy []bool
@@ -141,11 +142,11 @@ func find_available_server() int {
 Starts servers
  */
 func startServers(hosts []string){
-	//usr, _ := user.Current()
+	usr, _ := user.Current()
 
 	// "&>" is normal -> don't correct with "& >"
-	cmd := "bash -c 'dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
-	cmd_localhost := "dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
+	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
+	cmd_localhost := usr.HomeDir+"/Go/bin/dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
 
 
 	local_hostname, _ := os.Hostname()
