@@ -17,8 +17,9 @@ apt-get update
 #Install go
 wget https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.7.3.linux-amd64.tar.gz
-echo "GOPATH=/home/$user/Go" >> /etc/profile
-echo "export PATH=$PATH:$GOPATH/bin/" >> /etc/profile
+echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile
+echo "export GOPATH=/home/$user/Go" >> /etc/profile
+echo "export PATH=$PATH:/home/$user/Go/bin/" >> /etc/profile
 source /etc/profile
 
 #Install Apache thrift compile/install dependencies
@@ -38,6 +39,8 @@ apt-get install -y git
 
 
 #Install application dependencies
+apt-get install -y xz-utils
+apt-get install -y bc
 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
 tar xpvf ffmpeg-git-64bit-static.tar.xz -C /usr/local/bin --strip-components=1
 apt-get install -y blender imagemagick unzip libav-tools
