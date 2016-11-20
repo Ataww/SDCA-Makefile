@@ -1,4 +1,4 @@
-package main
+package dmake
 
 import (
 	"SDCA-Makefile/compilationInterface"
@@ -10,11 +10,9 @@ import (
 	"sync"
 	"os"
 	"time"
-	"golang.org/x/crypto/ssh"
-	"bytes"
 	"strings"
-	"io/ioutil"
 	"os/user"
+	"os/exec"
 )
 
 var busy []bool
@@ -141,85 +139,24 @@ func find_available_server() int {
 }
 
 /*
-Launch one server via SSH
- */
-func launchServer(command string, hostname string, port string, config *ssh.ClientConfig) string {
-	connection, error := ssh.Dial("tcp", fmt.Sprintf("%s:%s", strings.Split(hostname, ":")[0], port), config)
-	if error != nil{
-		fmt.Println("ERROR NEW CONNECTION ",fmt.Sprintf("%s:%s", strings.Split(hostname, ":")[0], port)," : ", error.Error())
-	}
-	defer connection.Close()
-	session, error:= connection.NewSession()
-	if error != nil{
-		fmt.Println("ERROR NEW SESSION : ", error)
-	}
-	defer session.Close()
-
-	var stdoutBuf bytes.Buffer
-	session.Stdout = &stdoutBuf
-	session.Run(command)
-
-	return hostname + " : " + stdoutBuf.String()
-}
-
-/*
-Get id_rsa key
- */
-func getKeyFile() (key ssh.Signer, err error){
-	usr, _ := user.Current()
-	file := usr.HomeDir + "/.ssh/id_rsa"
-	buf, err := ioutil.ReadFile(file)
-	if err != nil {
-		return
-	}
-	key, err = ssh.ParsePrivateKey(buf)
-	if err != nil {
-		return
-	}
-	return
-}
-
-/*
 Starts servers
  */
 func startServers(hosts []string){
 	usr, _ := user.Current()
 
 	// "&>" is normal -> don't correct with "& >"
-	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/main -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
+	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
+	fmt.Println("Going to execute this command on each server : ", cmd)
 
-	results := make(chan string, 10)
-	timeout := time.After(10 * time.Second)
+	for _,hostname := range hosts{
+		command := exec.Command("ssh", strings.Split(hostname, ":")[0], cmd )
+		_ , err := command.Output()
 
-	port := "22"
-
-	key, err := getKeyFile();
-	if err !=nil {
-		panic(err)
-	}
-	// Create ssh config
-	config := &ssh.ClientConfig{
-		User: usr.Name,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(key),
-		},
-	}
-
-	// Launch on each server
-	for i := 0; i < len(hosts); i++{
-		go func(hostname string, port string){
-			results <- launchServer(cmd, hostname, port, config)
-		}(hosts[i], port)
-	}
-
-	// Wait return
-	for i := 0; i < len(hosts); i++ {
-		select {
-		case res := <- results:
-			fmt.Println("Launch server on ",res)
-		case <- timeout:
-			fmt.Println("Time out ! : Exit ")
+		if (err != nil){
+			fmt.Println("Error while launching server : Exit")
 			os.Exit(1)
+		}else{
+			fmt.Print(strings.Split(hostname, ":")[0], " started")
 		}
 	}
 

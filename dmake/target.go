@@ -1,4 +1,4 @@
-package main
+package dmake
 
 import (
 	"fmt"

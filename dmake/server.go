@@ -1,4 +1,4 @@
-package main
+package dmake
 
 import (
 	"SDCA-Makefile/compilationInterface"
