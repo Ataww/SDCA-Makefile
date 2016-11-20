@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"git.apache.org/thrift.git/lib/go/thrift"
+	"strings"
 )
 
 func Usage() {
@@ -78,8 +79,10 @@ func main() {
 			// Read hostfile
 			for scanner.Scan() {
 				str := scanner.Text()
-				hosts = append(hosts, str)
-				fmt.Println("Found host : " + str)
+				if(strings.HasPrefix(str,"#") == false){
+					hosts = append(hosts, str)
+					fmt.Println("Found host : " + str)
+				}
 			}
 
 			if len(hosts) == 0 {
