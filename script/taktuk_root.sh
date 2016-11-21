@@ -17,9 +17,7 @@ apt-get update
 #Install go
 wget https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.7.3.linux-amd64.tar.gz
-echo "PATH=$PATH:/usr/local/go/bin" >> /etc/profile
-echo "PATH=$PATH:/home/$user/Go/bin/" >> /etc/profile
-echo "PATH=$PATH:/home/$user/Go/src/SDCA-Makefile/makefiles/premier" >> /etc/profile
+echo "PATH=$PATH:/usr/local/go/bin:/home/$user/Go/bin/:/home/$user/Go/src/SDCA-Makefile/makefiles/premier" >> /etc/profile
 echo "GOPATH=/home/$user/Go" >> /etc/profile
 echo "export PATH"
 echo "export GOPATH"
