@@ -13,6 +13,9 @@ mkdir /home/$user/Go/src
 mkdir /home/$user/Go/bin
 mkdir /home/$user/Go/pkg
 
+#Export GOPATH
+export GOPATH=/home/$user/Go
+
 #Clone sources
 git clone https://github.com/Ataww/SDCA-Makefile.git /home/$user/Go/src/SDCA-Makefile
 
