@@ -49,13 +49,33 @@ Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie 
 		# Lancer le script
 		bash ./SDCA-Mafefile/script/init_project.sh
 
-7. 
+7. Aller dans un dossier contenant un Makefile. Y ajouter un fichier hostfile.txt (format d'une ligne host:9090).
+
+		# Si le Makefile et le hostfile sont dans le dossier courant
+		dmake
+		
+		# Si aucun hostfile n'est présent ou spécifié alors l'exécution sera lancée en local
+		dmake -makefile=<path_to_makefile>
+		
+		# Sinon il est possible de les spécifier
+		dmake -hostfile=<path_to_file> -makefile=<path_to_makefile>
+		
+
+##IMPORTANT
+
+Nos scripts de déploiement ouvrent seulement le port 9090 sur les machines du cluster.
+Il est donc impératif que les lignes du fichiers hostfile.txt soit de la forme :
+
+	host_1:9090
+	host_2:9090
+	...
+	host_N:9090
 
 ----
 
 ##Bugs connus
 
-- Il se peut que taktuk ne remplisse pas entièrement sa tâche d'installation des packages sur toutes les machines. Dans ce cas, un message d'error avec le status 127 sera affiché. Pour régler le problème il faut relancer le script "init_taktuk.sh" sur la machine concernée.
+- Il se peut (dans 90% des cas ...) que taktuk ne remplisse pas entièrement sa tâche d'installation des packages sur toutes les machines. Dans ce cas, un message d'error avec le status 127 sera affiché. Pour régler le problème il faut relancer le script "init_taktuk.sh" sur la machine concernée.
 
 ----
 
