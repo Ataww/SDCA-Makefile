@@ -147,7 +147,7 @@ func startServers(hosts []string){
 	// "&>" is normal -> don't correct with "& >"
 	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
 	cmd_localhost := usr.HomeDir+"/Go/bin/dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
-	cmd_localhost_out := usr.HomeDir+"/Go/bin/dmake -server=True -addr=localhost:0.0.0.0 &> $(hostname)_server.out &"
+	cmd_localhost_out := usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &"
 
 
 	local_hostname, _ := os.Hostname()
