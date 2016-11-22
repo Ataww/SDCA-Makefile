@@ -47,7 +47,7 @@ Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie 
 		ssh <machine>
 			
 		# Lancer le script
-		bash ./SDCA-Mafefile/script/init_project.sh
+		bash ./SDCA-Makefile/script/init_project.sh
 
 7. Aller dans un dossier contenant un Makefile. Y ajouter un fichier hostfile.txt (format d'une ligne host:9090).
 
