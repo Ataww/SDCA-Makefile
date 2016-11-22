@@ -19,8 +19,8 @@ wget https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.7.3.linux-amd64.tar.gz
 echo "PATH=$PATH:/usr/local/go/bin:/home/$user/Go/bin/:/home/$user/Go/src/SDCA-Makefile/makefiles/premier" >> /etc/profile
 echo "GOPATH=/home/$user/Go" >> /etc/profile
-echo "export PATH"
-echo "export GOPATH"
+echo "export PATH" >> /etc/profile
+echo "export GOPATH" >> /etc/profile
 source /etc/profile
 
 #Install Apache thrift compile/install dependencies
