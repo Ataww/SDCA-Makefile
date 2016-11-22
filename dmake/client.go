@@ -147,6 +147,7 @@ func startServers(hosts []string){
 	// "&>" is normal -> don't correct with "& >"
 	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
 	cmd_localhost := usr.HomeDir+"/Go/bin/dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
+	cmd_localhost_out := usr.HomeDir+"/Go/bin/dmake -server=True -addr=localhost:0.0.0.0 &> $(hostname)_server.out &"
 
 
 	local_hostname, _ := os.Hostname()
@@ -154,12 +155,17 @@ func startServers(hosts []string){
 	for _,hostname := range hosts{
 		var command *exec.Cmd
 		fmt.Println("hostname : ",hostname)
-		if (strings.Contains(hostname, "localhost") || strings.Contains(hostname, local_hostname)){
+		if (strings.Contains(hostname, "localhost")){
 			fmt.Println("Going to execute this command : ", cmd_localhost)
 			command = exec.Command("bash", "-c", cmd_localhost )
 		}else{
-			fmt.Println("Going to execute this command : ", cmd)
-			command = exec.Command("ssh", strings.Split(hostname, ":")[0], cmd )
+			if(strings.Contains(hostname, local_hostname)){
+				fmt.Println("Going to execute this command : ", cmd_localhost_out)
+				command = exec.Command("bash", "-c", cmd_localhost_out )
+			}else{
+				fmt.Println("Going to execute this command : ", cmd)
+				command = exec.Command("ssh", strings.Split(hostname, ":")[0], cmd )
+			}
 		}
 
 		_ , err := command.Output()
