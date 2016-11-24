@@ -2,20 +2,20 @@
 
 ----
 
-##Présentation
+## Présentation
 
 Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie [Thrift](www.http://thrift.apache.org/).
 
 ----
 
-##Pré-requis
+## Pré-requis
 
 * Avoir au minimum la version 1.7.x de Go et avoir setté les variables d'environnement Go
 * Avoir installé thrift
 
 ----
 
-##Procédure de déploiement sur Grid5000
+## Procédure de déploiement sur Grid5000
 
 1. Réserver un cluster de machines :
 
@@ -33,7 +33,7 @@ Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie 
 		git clone https://github.com/Ataww/SDCA-Makefile.git
 
 4. Lancer le script de configuration des machines :
-	
+
 		bash ./SDCA-Makefile/script/configure_host.sh
 
 5. Lancer le script d'installation des packages avec taktuk :
@@ -45,7 +45,7 @@ Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie 
 
 		# Connection à la machine
 		ssh <machine>
-			
+
 		# Lancer le script
 		bash ./SDCA-Makefile/script/init_project.sh
 
@@ -53,15 +53,15 @@ Makefile distribué codé en [Golang](www.golang.org) et utilisant la librairie 
 
 		# Si le Makefile et le hostfile sont dans le dossier courant
 		dmake
-		
+
 		# Si aucun hostfile n'est présent ou spécifié alors l'exécution sera lancée en local
 		dmake -makefile=<path_to_makefile>
-		
+
 		# Sinon il est possible de les spécifier
 		dmake -hostfile=<path_to_file> -makefile=<path_to_makefile>
-		
 
-##IMPORTANT
+
+## IMPORTANT
 
 Nos scripts de déploiement ouvrent seulement le port 9090 sur les machines du cluster.
 Il est donc impératif que les lignes du fichiers hostfile.txt soit de la forme :
@@ -73,13 +73,13 @@ Il est donc impératif que les lignes du fichiers hostfile.txt soit de la forme 
 
 ----
 
-##Bugs connus
+## Bugs connus
 
 - Il se peut (dans 90% des cas ...) que taktuk ne remplisse pas entièrement sa tâche d'installation des packages sur toutes les machines. Dans ce cas, un message d'error avec le status 127 sera affiché. Pour régler le problème il faut relancer le script "init_taktuk.sh" sur la machine concernée.
 
 ----
 
-##Contacts
+## Contacts
 
 - [Clément Taboulot](mailto:clement.taboulot@grenoble-inp.org)
 - [Vincent Chenal](mailto:vincent.chenal@grenoble-inp.org)
