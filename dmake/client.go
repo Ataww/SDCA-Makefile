@@ -4,15 +4,15 @@ import (
 	"SDCA-Makefile/compilationInterface"
 	"crypto/tls"
 	"fmt"
-	"log"
-	"path/filepath"
 	"git.apache.org/thrift.git/lib/go/thrift"
-	"sync"
+	"log"
 	"os"
-	"time"
-	"strings"
 	"os/exec"
 	"os/user"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
 )
 
 var busy []bool
@@ -22,7 +22,7 @@ var workingDir string
 
 /*
 Create thrift transport
- */
+*/
 func createConnection(transportFactory *thrift.TTransportFactory, addr string, secure bool) (error, *thrift.TTransport) {
 	var transport = new(thrift.TTransport)
 	var err error
@@ -49,7 +49,7 @@ func createConnection(transportFactory *thrift.TTransportFactory, addr string, s
 
 /*
 Open a thrift connection
- */
+*/
 func open_connection(t *thrift.TTransport) {
 	err := (*t).Open()
 	if err != nil {
@@ -59,7 +59,7 @@ func open_connection(t *thrift.TTransport) {
 
 /*
 Close a thrift connection
- */
+*/
 func close_connection(t *thrift.TTransport) {
 	err := (*t).Close()
 	if err != nil {
@@ -69,7 +69,7 @@ func close_connection(t *thrift.TTransport) {
 
 /*
 Send an action to an other host
- */
+*/
 func handleTarget(transport *thrift.TTransport, protocolFactory thrift.TProtocolFactory, target *Target, serverName string) (err error) {
 
 	// Configuration of the command
@@ -84,9 +84,9 @@ func handleTarget(transport *thrift.TTransport, protocolFactory thrift.TProtocol
 	status, err := client.ExecuteCommand(command)
 	close_connection(transport)
 	if err != nil {
-		fmt.Println(serverName ," : There was a problem while running target ",target.id,": ", err.Error())
+		fmt.Println(serverName, " : There was a problem while running target ", target.id, ": ", err.Error())
 	}
-	fmt.Println(serverName ," : Execute target ",target.id," and return status ",status)
+	fmt.Println(serverName, " : Execute target ", target.id, " and return status ", status)
 
 	mutex.Lock()
 	target.computing = false
@@ -99,7 +99,7 @@ func handleTarget(transport *thrift.TTransport, protocolFactory thrift.TProtocol
 
 /*
 Stop server
- */
+*/
 func handleStop(transport *thrift.TTransport, protocolFactory thrift.TProtocolFactory, serverName string) (err error) {
 
 	// Configuration
@@ -113,14 +113,14 @@ func handleStop(transport *thrift.TTransport, protocolFactory thrift.TProtocolFa
 	if err != nil {
 		fmt.Println(serverName, " : There was a problem while stoping server ", err.Error())
 	}
-	fmt.Println(serverName , " stop")
+	fmt.Println(serverName, " stop")
 
 	return err
 }
 
 /*
 Find an available server
- */
+*/
 func find_available_server() int {
 	mutex.Lock()
 	var nb_tested_id int = 0
@@ -140,57 +140,55 @@ func find_available_server() int {
 
 /*
 Starts servers
- */
-func startServers(hosts []string){
+*/
+func startServers(hosts []string) {
 	usr, _ := user.Current()
 
 	// "&>" is normal -> don't correct with "& >"
-	cmd := "bash -c '"+usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
-	cmd_localhost := usr.HomeDir+"/Go/bin/dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
-	cmd_localhost_out := usr.HomeDir+"/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &"
-
+	cmd := "bash -c '" + usr.HomeDir + "/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &'"
+	cmd_localhost := usr.HomeDir + "/Go/bin/dmake -server=True -addr=localhost:9090 &> $(hostname)_server.out &"
+	cmd_localhost_out := usr.HomeDir + "/Go/bin/dmake -server=True -addr=0.0.0.0:9090 &> $(hostname)_server.out &"
 
 	local_hostname, _ := os.Hostname()
 
-	for _,hostname := range hosts{
+	for _, hostname := range hosts {
 		var command *exec.Cmd
-		fmt.Println("hostname : ",hostname)
-		if (strings.Contains(hostname, "localhost")){
+		fmt.Println("hostname : ", hostname)
+		if strings.Contains(hostname, "localhost") {
 			fmt.Println("Going to execute this command : ", cmd_localhost)
-			command = exec.Command("bash", "-c", cmd_localhost )
-		}else{
-			if(strings.Contains(hostname, local_hostname)){
+			command = exec.Command("bash", "-c", cmd_localhost)
+		} else {
+			if strings.Contains(hostname, local_hostname) {
 				fmt.Println("Going to execute this command : ", cmd_localhost_out)
-				command = exec.Command("bash", "-c", cmd_localhost_out )
-			}else{
+				command = exec.Command("bash", "-c", cmd_localhost_out)
+			} else {
 				fmt.Println("Going to execute this command : ", cmd)
-				command = exec.Command("ssh", strings.Split(hostname, ":")[0], cmd )
+				command = exec.Command("ssh", strings.Split(hostname, ":")[0], cmd)
 			}
 		}
 
-		_ , err := command.Output()
+		_, err := command.Output()
 
-		if (err != nil){
+		if err != nil {
 			fmt.Println("Error while launching server : Exit")
 			os.Exit(1)
-		}else{
+		} else {
 			fmt.Println(strings.Split(hostname, ":")[0], " started")
 		}
 	}
-
 
 	time.Sleep(2 * time.Second)
 }
 
 /*
 Main client function
- */
+*/
 func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift.TProtocolFactory, secure bool, hosts []string, makefile string) error {
 	var servers []*thrift.TTransport
 	debut := time.Now()
 
 	// Start all servers
-	startServers(hosts);
+	startServers(hosts)
 
 	// Create thrift connection
 	for i := 0; i < len(hosts); i++ {
@@ -211,22 +209,21 @@ func runClient(transportFactory thrift.TTransportFactory, protocolFactory thrift
 	dir, _ := filepath.Abs(filepath.Dir(makefile))
 	workingDir = dir
 
-
 	// Job distribution while the target is not done
 	for root_target.done != true {
 		var leaf = root_target.Get_Leaf()
 		if leaf != nil {
 			if id_server := find_available_server(); id_server != -1 {
-				if leaf.lineCommand != ""{
+				if leaf.lineCommand != "" {
 					// Execute the node command
-					fmt.Println(hosts[id_server], " : Going to execute target ",leaf.id)
+					fmt.Println(hosts[id_server], " : Going to execute target ", leaf.id)
 					mutex.Lock()
 					leaf.computing = true
 					leaf.serverId = id_server
 					busy[id_server] = true
 					mutex.Unlock()
 					go handleTarget(servers[id_server], protocolFactory, leaf, hosts[id_server])
-				}else{
+				} else {
 					// There is no command to execute so this target is done
 					fmt.Println("No command for target :", leaf.id)
 					mutex.Lock()

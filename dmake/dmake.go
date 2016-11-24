@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"os"
 	"git.apache.org/thrift.git/lib/go/thrift"
+	"os"
 	"strings"
 )
 
@@ -17,7 +17,7 @@ func Usage() {
 
 /*
 Main function
- */
+*/
 func main() {
 	flag.Usage = Usage
 	server := flag.Bool("server", false, "Run server")
@@ -68,18 +68,17 @@ func main() {
 
 		fmt.Println("Checking hosts inside " + *hostfile + " file")
 
-
 		if _, err := os.Stat(*hostfile); os.IsNotExist(err) {
-		  	hosts = append(hosts, "localhost:9090")
+			hosts = append(hosts, "localhost:9090")
 			fmt.Println("Using localhost as server : localhost:9090 ")
-		}else{
+		} else {
 			f, _ := os.Open(*hostfile)
 			scanner := bufio.NewScanner(f)
 
 			// Read hostfile
 			for scanner.Scan() {
 				str := scanner.Text()
-				if(strings.HasPrefix(str,"#") == false){
+				if strings.HasPrefix(str, "#") == false {
 					hosts = append(hosts, str)
 					fmt.Println("Found host : " + str)
 				}
